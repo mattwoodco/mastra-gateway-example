@@ -49,7 +49,10 @@ export function Agent() {
                         switch (part.type) {
                           case "text":
                             return (
-                              <Response key={`${message.id}-${i}`}>
+                              <Response
+                                key={`${message.id}-${i}`}
+                                parseIncompleteMarkdown={true}
+                              >
                                 {part.text}
                               </Response>
                             );

@@ -1,7 +1,6 @@
-import { createTool } from "@mastra/core/tools";
 import { createStep, createWorkflow } from "@mastra/core/workflows";
 import z from "zod";
-import { createAgent } from "../utils";
+import { createAgent, createAgentTool } from "../utils";
 
 export const characterCreator = createAgent(
   "characterCreator",
@@ -23,69 +22,26 @@ export const dialogueCreator = createAgent(
   "Drop rap-style bars that snap and rhyme—dialogue with cadence, swagger, and flow. return no more than 120 characters",
 );
 
-const characterCreatorTool = createTool({
-  id: "characterCreator",
-  description:
-    "Forge a fresh character from the prompt—every name starts with “F”, no exceptions. return no more than 120 characters",
-  inputSchema: z.object({
-    input: z.string(),
-  }),
-  outputSchema: z.object({
-    output: z.string(),
-  }),
-  execute: async ({ context }) => {
-    const result = await characterCreator.generateVNext(context.input);
-    return { output: result.text };
-  },
-});
+// Look how clean! Just agent + description, everything else is automatic 🎯
+const characterCreatorTool = createAgentTool(
+  characterCreator,
+  'Forge a fresh character from the prompt—every name starts with "F", no exceptions. return no more than 120 characters',
+);
 
-const settingCreatorTool = createTool({
-  id: "settingCreator",
-  description:
-    "Build a cinematic outdoor setting from the prompt—fields, forests, skylines, always outside. return no more than 120 characters",
-  inputSchema: z.object({
-    input: z.string(),
-  }),
-  outputSchema: z.object({
-    output: z.string(),
-  }),
-  execute: async ({ context }) => {
-    const result = await settingCreator.generateVNext(context.input);
-    return { output: result.text };
-  },
-});
+const settingCreatorTool = createAgentTool(
+  settingCreator,
+  "Build a cinematic outdoor setting from the prompt—fields, forests, skylines, always outside. return no more than 120 characters",
+);
 
-const plotCreatorTool = createTool({
-  id: "plotCreator",
-  description:
-    "Craft an airtight detective plot from the prompt—mystery forward, clues crisp, twists earned. return no more than 120 characters",
-  inputSchema: z.object({
-    input: z.string(),
-  }),
-  outputSchema: z.object({
-    output: z.string(),
-  }),
-  execute: async ({ context }) => {
-    const result = await plotCreator.generateVNext(context.input);
-    return { output: result.text };
-  },
-});
+const plotCreatorTool = createAgentTool(
+  plotCreator,
+  "Craft an airtight detective plot from the prompt—mystery forward, clues crisp, twists earned. return no more than 120 characters",
+);
 
-const dialogueCreatorTool = createTool({
-  id: "dialogueCreator",
-  description:
-    "Generate rap-style dialogue that rhymes—snappy exchanges with rhythm and punch. return no more than 120 characters",
-  inputSchema: z.object({
-    input: z.string(),
-  }),
-  outputSchema: z.object({
-    output: z.string(),
-  }),
-  execute: async ({ context }) => {
-    const result = await dialogueCreator.generateVNext(context.input);
-    return { output: result.text };
-  },
-});
+const dialogueCreatorTool = createAgentTool(
+  dialogueCreator,
+  "Generate rap-style dialogue that rhymes—snappy exchanges with rhythm and punch. return no more than 120 characters",
+);
 
 export const characterCreatorStep = createStep(characterCreatorTool);
 export const settingCreatorStep = createStep(settingCreatorTool);

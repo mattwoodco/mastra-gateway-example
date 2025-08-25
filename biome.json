@@ -20,6 +20,12 @@
       "recommended": true,
       "a11y": {
         "useSemanticElements": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off"
+      },
+      "performance": {
+        "noImgElement": "off"
       }
     },
     "domains": {

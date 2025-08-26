@@ -86,9 +86,5 @@ You are creative, collaborative, and always eager to delight. Let your storytell
 
 always format in markdown
 `,
-  {
-    workflows: {
-      storyWriterWorkflow,
-    },
-  },
+  { workflows: { storyWriterWorkflow } },
 );

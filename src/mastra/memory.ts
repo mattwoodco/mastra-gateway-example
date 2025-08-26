@@ -4,7 +4,7 @@ import { storage } from "./stores";
 export const memory = new Memory({
   options: {
     workingMemory: {
-      enabled: true,
+      enabled: false,
       scope: "resource",
       template: `# User Profile 
  - **Name**:`,

@@ -88,8 +88,8 @@ export default function StoryForm({ onSubmit }: StoryFormProps) {
             className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-2.5 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </label>
-        {errors["genre"] && (
-          <p className="text-red-500 text-sm mt-1">{errors["genre"]}</p>
+        {errors.genre && (
+          <p className="text-red-500 text-sm mt-1">{errors.genre}</p>
         )}
       </div>
 
@@ -126,7 +126,7 @@ export default function StoryForm({ onSubmit }: StoryFormProps) {
               onChange={(e) =>
                 handleChange(
                   "protagonistDetails.age",
-                  parseInt(e.target.value) || 0,
+                  Number.parseInt(e.target.value, 10) || 0,
                 )
               }
               className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-2.5 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -188,8 +188,8 @@ export default function StoryForm({ onSubmit }: StoryFormProps) {
             className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-2.5 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </label>
-        {errors["setting"] && (
-          <p className="text-red-500 text-sm mt-1">{errors["setting"]}</p>
+        {errors.setting && (
+          <p className="text-red-500 text-sm mt-1">{errors.setting}</p>
         )}
       </div>
 

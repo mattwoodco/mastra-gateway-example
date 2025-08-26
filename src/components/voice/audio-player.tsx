@@ -53,10 +53,11 @@ export default function AudioPlayer({ audioData }: AudioPlayerProps) {
   };
 
   const handleTimeUpdate = () => {
-    if (!audioRef.current || !isFinite(audioRef.current.duration)) return;
+    if (!audioRef.current || !Number.isFinite(audioRef.current.duration))
+      return;
     const progress =
       (audioRef.current.currentTime / audioRef.current.duration) * 100;
-    setProgress(isFinite(progress) ? progress : 0);
+    setProgress(Number.isFinite(progress) ? progress : 0);
   };
 
   const handleEnded = () => {
@@ -74,7 +75,7 @@ export default function AudioPlayer({ audioData }: AudioPlayerProps) {
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
-    if (audioRef.current && isFinite(audioRef.current.duration)) {
+    if (audioRef.current && Number.isFinite(audioRef.current.duration)) {
       setProgress(value);
       audioRef.current.currentTime = (value / 100) * audioRef.current.duration;
     }

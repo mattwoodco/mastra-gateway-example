@@ -8,7 +8,7 @@ export default function Home() {
     <div className="flex w-full h-full flex-1 p-8">
       <div className="flex-1">
         <div className="max-w-4xl mx-auto">
-          <Agent />
+          <Agent hideReasoning={false} hideTools={true} />
         </div>
       </div>
 

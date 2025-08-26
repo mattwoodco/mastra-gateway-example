@@ -9,7 +9,7 @@ import {
 import AudioPlayer from "@/components/voice/audio-player";
 import { useState } from "react";
 
-interface SimpleStoryVoiceProps {
+interface TextToSpeechProps {
   className?: string;
   placeholder?: string;
   maxInputLength?: number;
@@ -40,11 +40,11 @@ const readStream = async (stream: ReadableStream): Promise<Blob> => {
   return new Blob(chunks as BlobPart[], { type: "audio/mp3" });
 };
 
-export default function SimpleStoryVoice({
+export default function TextToSpeech({
   className = "",
   placeholder = "Enter your story idea or text to convert to speech...",
   maxInputLength = 500,
-}: SimpleStoryVoiceProps) {
+}: TextToSpeechProps) {
   const [state, setState] = useState<StoryState>({
     input: "",
     isLoading: false,

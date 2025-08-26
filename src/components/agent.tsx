@@ -49,6 +49,20 @@ export function Agent({
       console.log("🚀 ~ Data type:", type);
       console.log("🚀 ~ Data content:", JSON.stringify(data, null, 2));
       console.log("🚀 ~ Full data object:", data);
+
+      // Check if this is our custom data
+      if (type.startsWith("data-")) {
+        console.log("🔧 ~ CUSTOM DATA RECEIVED:", type, data);
+      }
+    },
+    onFinish: (data) => {
+      console.log("🔧 ~ STREAM FINISHED:", {
+        data,
+        timestamp: Date.now(),
+      });
+    },
+    onError: (error) => {
+      console.log("🔧 ~ STREAM ERROR:", error, { timestamp: Date.now() });
     },
   });
 

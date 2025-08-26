@@ -5,24 +5,15 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    console.log("🔍 Parts API route called");
     const { messages } = await req.json();
-    console.log("🔍 Messages received:", messages.length);
-
     const agent = mastra.getAgent("partsAgent");
-    console.log("🔍 Agent retrieved:", agent ? "exists" : "null");
 
     if (!agent) {
-      console.error("❌ Agent 'partsAgent' not found!");
       return new Response("Agent not found", { status: 500 });
     }
 
-    // Use the new createUIMessageStream approach integrated with Mastra agent
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        console.log("🔍 UI Message Stream execute called");
-
-        // Send initial status
         writer.write({
           type: "data-status",
           data: {
@@ -32,95 +23,104 @@ export async function POST(req: Request) {
         });
 
         try {
-          // Use streamVNext with aisdk format for compatibility
           const userMessage =
             messages[messages.length - 1]?.content || "engine";
-          console.log("🔍 Calling agent streamVNext with:", userMessage);
 
           const agentStream = await agent.streamVNext(userMessage, {
             format: "aisdk",
           });
-          console.log("🔍 Agent stream created successfully");
 
           let toolResultsProcessed = false;
+          const seenChunkTypes = new Set();
+          let collectedParts: Array<{ name: string; quantity: number }> = [];
+          let toolEquipment = "";
 
-          // Stream the agent's response and forward to writer
           for await (const chunk of agentStream.fullStream) {
-            console.log("🔍 Processing chunk:", chunk.type, chunk);
+            try {
+              if (!chunk || typeof chunk.type !== "string") {
+                continue;
+              }
 
-            // Forward text chunks
-            if (chunk.type === "text-delta") {
-              writer.write({
-                type: "text-delta",
-                id: chunk.id || "text-0",
-                delta: chunk.text || "",
-              });
-            }
-
-            // Handle tool results and create custom UI data
-            if (chunk.type === "tool-result" && !toolResultsProcessed) {
-              toolResultsProcessed = true;
-              console.log("🔍 Processing tool result:", chunk);
-
-              // Send processing status
-              writer.write({
-                type: "data-status",
-                data: {
-                  phase: "Processing",
-                  message: "Generating parts inventory...",
-                },
-              });
-
-              // Send layout update
-              writer.write({
-                type: "data-layout",
-                id: "layout-1",
-                data: {
-                  layout: {
-                    type: "grid",
-                    columns: 2,
-                    rows: 2,
-                  },
-                },
-              });
-
-              // Extract parts from tool result
-              if (chunk.output?.parts) {
-                const parts = chunk.output.parts;
-                const equipment = chunk.input || userMessage;
-
-                // Send parsing status
-                writer.write({
-                  type: "data-status",
-                  data: {
-                    phase: "Parsing",
-                    message: "Formatting parts list...",
-                  },
+              if (chunk.type === "text-start") {
+                await writer.write({
+                  type: "text-start",
+                  id: chunk.id || "text-0",
                 });
-
-                // Send parts data for custom UI
-                writer.write({
-                  type: "data-parts",
-                  data: {
-                    equipment: equipment,
-                    parts: parts,
-                    total: parts.length,
-                  },
-                });
-
-                // Send completion status
-                writer.write({
-                  type: "data-status",
-                  data: {
-                    phase: "Complete",
-                    message: `Found ${parts.length} parts for ${equipment}`,
-                  },
+              } else if (chunk.type === "text-delta") {
+                const textChunk = chunk as {
+                  type: string;
+                  id?: string;
+                  text?: string;
+                };
+                const chunkText = textChunk.text;
+                if (chunkText !== undefined && chunkText !== null) {
+                  await writer.write({
+                    type: "text-delta",
+                    id: chunk.id || "text-0",
+                    delta: String(chunkText),
+                  });
+                }
+              } else if (chunk.type === "text-end") {
+                await writer.write({
+                  type: "text-end",
+                  id: chunk.id || "text-0",
                 });
               }
+
+              if (chunk.type === "tool-result") {
+                if (!toolResultsProcessed) {
+                  toolResultsProcessed = true;
+
+                  if (chunk.output?.parts) {
+                    collectedParts = chunk.output.parts;
+                    toolEquipment = chunk.input || userMessage;
+
+                    await writer.write({
+                      type: "data-status",
+                      data: {
+                        phase: "Processing",
+                        message: "Generating parts inventory...",
+                      },
+                    });
+
+                    await writer.write({
+                      type: "data-layout",
+                      id: "layout-1",
+                      data: { layout: { type: "grid", columns: 2, rows: 2 } },
+                    });
+
+                    await writer.write({
+                      type: "data-status",
+                      data: {
+                        phase: "Parsing",
+                        message: "Formatting parts list...",
+                      },
+                    });
+
+                    await writer.write({
+                      type: "data-parts",
+                      data: {
+                        equipment: toolEquipment,
+                        parts: collectedParts,
+                        total: collectedParts.length,
+                      },
+                    });
+
+                    await writer.write({
+                      type: "data-status",
+                      data: {
+                        phase: "Complete",
+                        message: `Found ${collectedParts.length} parts for ${toolEquipment}`,
+                      },
+                    });
+                  }
+                }
+              }
+            } catch {
+              // continue processing other chunks
             }
           }
 
-          // Final completion status if no tool results were processed
           if (!toolResultsProcessed) {
             writer.write({
               type: "data-status",
@@ -131,7 +131,6 @@ export async function POST(req: Request) {
             });
           }
         } catch (error) {
-          console.error("❌ Agent execution error:", error);
           writer.write({
             type: "data-status",
             data: {
@@ -143,14 +142,8 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("🔍 Creating UI message stream response...");
     return createUIMessageStreamResponse({ stream });
   } catch (error) {
-    console.error("❌ API Error:", error);
-    console.error(
-      "❌ Error stack:",
-      error instanceof Error ? error.stack : "No stack",
-    );
     return new Response(
       JSON.stringify({
         error: "Internal server error",

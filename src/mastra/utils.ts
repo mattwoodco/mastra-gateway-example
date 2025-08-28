@@ -7,7 +7,7 @@ import { memory } from "./memory";
 export const createAgent = (
   name: string,
   instructions: string,
-  opts?: Partial<Pick<AgentConfig, "tools" | "workflows" | "model" | "voice">>,
+  opts?: Partial<AgentConfig>,
 ) => {
   return new Agent({
     name,
